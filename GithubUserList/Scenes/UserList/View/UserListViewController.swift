@@ -51,8 +51,8 @@ class UserListViewController: UIViewController {
     private func setupNavigationBar() {
         //cleaners
         self.navigationController?.navigationBar.setValue(true, forKey: "hidesShadow")
-        
         let searchTextfield = UISearchBar()
+        searchTextfield.delegate = self
         self.navigationItem.titleView = searchTextfield
     }
     
@@ -116,5 +116,20 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         let destinationVC = storyboard?.instantiateViewController(identifier: String(describing: ProfileViewController.self)) as! ProfileViewController
         destinationVC.gitUser = self.githubUserList[indexPath.row]
         self.navigationController?.pushViewController(destinationVC, animated: true)
+    }
+}
+
+extension UserListViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            self.viewModel.getLocal()
+            self.githubUserList = self.viewModel.userList
+            self.tableView.reloadData()
+        } else {
+            self.viewModel.search(criteria: searchText.lowercased()) { data in
+                self.githubUserList = data
+                self.tableView.reloadData()
+            }
+        }
     }
 }

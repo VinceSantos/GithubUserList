@@ -139,6 +139,11 @@ class UserListViewModel {
           print("Could not fetch. \(error), \(error.userInfo)")
         }
     }
+    
+    func search(criteria: String, completion: @escaping([UserViewModel]) -> Void) {
+        let filteredData = self.userList.filter{ $0.login.contains(criteria)}
+        completion(filteredData)
+    }
 }
 
 struct UserViewModel {
