@@ -1,0 +1,19 @@
+# Template information section
+name: "swifty_mvvm"
+summary: "Swift MVVM module template."
+author: "Vince Santos"
+version: "0.1.0"
+license: "MIT"
+
+# The declarations for code files
+
+code_files:
+
+# View layer
+- {name: View/ViewController.swift, path: Code/View/ViewController.swift.liquid}
+
+# ViewModel layer
+- {name: ViewModel/ViewModel.swift, path: Code/ViewModel/ViewModel.swift.liquid}
+
+# Model layer
+- {name: Model/Model.swift, path: Code/Model/Model.swift.liquid}
