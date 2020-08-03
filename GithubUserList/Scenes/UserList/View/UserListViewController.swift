@@ -26,6 +26,9 @@ class UserListViewController: UIViewController {
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true
+        self.viewModel.getLocal()
+        self.githubUserList = self.viewModel.userList
+        self.tableView.reloadData()
     }
     
     //MARK: Setup
@@ -93,6 +96,11 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         let absoluteRow = indexPath.row + 1
         if absoluteRow.isMultiple(of: 4) {
             cell.gitImage.image = self.githubUserList[indexPath.row].avatar.invertedImage()
+        }
+        if self.githubUserList[indexPath.row].hasNote {
+            cell.noteImage.isHidden = false
+        } else {
+            cell.noteImage.isHidden = true
         }
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         return cell

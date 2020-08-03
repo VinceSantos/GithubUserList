@@ -25,13 +25,35 @@ class UserListViewModel {
                 let fetchedList = try JSONDecoder().decode([UserListModel].self, from: data)
                 print(fetchedList.count)
                 DispatchQueue.main.async {
-                     for item in fetchedList {
-                         self.syncToLocal(fetchedList: item)
-                     }
-                     self.dispatchGroup.notify(queue: .main) {
-                        self.getLocal()
-                        completion()
-                     }
+                    guard let appDelegate =
+                      UIApplication.shared.delegate as? AppDelegate else {
+                      return
+                    }
+                    
+                    // 1
+                    let managedContext =
+                      appDelegate.persistentContainer.viewContext
+                    
+                    let fetchRequest =
+                      NSFetchRequest<NSManagedObject>(entityName: "UserList")
+                    
+                    do {
+                        let result = try managedContext.fetch(fetchRequest)
+                        if result.isEmpty {
+                            for item in fetchedList {
+                                self.syncToLocal(fetchedList: item)
+                            }
+                            self.dispatchGroup.notify(queue: .main) {
+                               self.getLocal()
+                               completion()
+                            }
+                        } else {
+                            self.getLocal()
+                            completion()
+                        }
+                    } catch let error as NSError {
+                      print("Could not fetch. \(error), \(error.userInfo)")
+                    }
                 }
             } catch {
                 print(error.localizedDescription)
@@ -64,7 +86,6 @@ class UserListViewModel {
         do {
             let result = try managedContext.fetch(fetchRequest)
             let isExisting = result.contains(where: {($0.value(forKey: "id") as! Int) == fetchedList.id})
-            print("is Existing --- \(isExisting)")
             if !isExisting {
                 let url = URL(string: fetchedList.avatar_url)!
 

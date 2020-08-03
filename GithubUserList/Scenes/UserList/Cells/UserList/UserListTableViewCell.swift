@@ -11,6 +11,7 @@ import UIKit
 class UserListTableViewCell: UITableViewCell {
     
     @IBOutlet weak var gitImage: UIImageViewDesignable!
+    @IBOutlet weak var noteImage: UIImageView!
     @IBOutlet weak var gitUserName: UILabel!
     @IBOutlet weak var details: UILabel!
     
