@@ -98,11 +98,11 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
-//    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-//        if indexPath.row + 1 == self.githubUserList.count {
-//            fetchMoreUsers()
-//        }
-//    }
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row + 1 == self.githubUserList.count {
+            fetchMoreUsers()
+        }
+    }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let destinationVC = storyboard?.instantiateViewController(identifier: String(describing: ProfileViewController.self)) as! ProfileViewController

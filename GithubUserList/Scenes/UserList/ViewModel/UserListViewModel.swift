@@ -25,9 +25,9 @@ class UserListViewModel {
                 let fetchedList = try JSONDecoder().decode([UserListModel].self, from: data)
                 print(fetchedList.count)
                 DispatchQueue.main.async {
-//                     for item in fetchedList {
-//                         self.syncToLocal(fetchedList: item)
-//                     }
+                     for item in fetchedList {
+                         self.syncToLocal(fetchedList: item)
+                     }
                      self.dispatchGroup.notify(queue: .main) {
                         self.getLocal()
                         completion()
