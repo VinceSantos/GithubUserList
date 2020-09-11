@@ -12,5 +12,5 @@ struct UserListModel: Codable {
     var id: Int?
     var login: String?
     var repos_url: String?
-    var avatar_url: String
+    var avatar_url: String?
 }

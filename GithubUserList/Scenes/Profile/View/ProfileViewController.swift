@@ -31,7 +31,7 @@ class ProfileViewController: UIViewController {
     private func setupBindings() {
         viewModel = ProfileViewModel()
         self.activityIndicator.show(uiView: self)
-        viewModel.fetchProfileData(userName: gitUser.login) {
+        viewModel.fetchProfileData(userName: gitUser.login!) {
             self.userProfile = self.viewModel.profileData
             self.title = self.userProfile?.name
             self.tableView.reloadData()
@@ -48,7 +48,7 @@ class ProfileViewController: UIViewController {
     }
     
     @objc func updateNoteCoreData() {
-        viewModel.updateNote(id: self.gitUser.id, noteString: textfieldText) {
+        viewModel.updateNote(id: self.gitUser.id!, noteString: textfieldText) {
             self.userProfile = self.viewModel.profileData
             self.tableView.reloadData()
         }
@@ -64,7 +64,7 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
         switch indexPath.row {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProfileHeaderTableViewCell.self)) as! ProfileHeaderTableViewCell
-            cell.profileHeader.image = self.gitUser.avatar
+            cell.profileHeader.image = UIImage(data: self.gitUser.avatar!)
             cell.profileFollowers.text = "Followers: \(self.userProfile?.followers?.description ?? "0")"
             cell.profileFollowing.text = "Following: \(self.userProfile?.following?.description ?? "0")"
             return cell

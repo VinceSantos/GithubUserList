@@ -12,6 +12,7 @@ class UserListViewController: UIViewController {
     public var viewModel: UserListViewModel!
     private var githubUserList = [UserViewModel]()
     private var activityIndicator = ActivityIndicator()
+    private var currentLastIndex = 0
 
     @IBOutlet weak var tableView: UITableView!
     
@@ -26,30 +27,27 @@ class UserListViewController: UIViewController {
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true
-        self.viewModel.getLocal()
-        self.githubUserList = self.viewModel.userList
-        self.tableView.reloadData()
     }
     
     //MARK: Setup
     private func setupUI() {
-        stopIndicator()
         setupNavigationBar()
         setupTableView()
     }
 
     private func setupBindings() {
         viewModel = UserListViewModel()
-        startIndicator()
-        viewModel.fetchGitUsers(id: 0) {
-            self.githubUserList = self.viewModel.userList
-            self.tableView.reloadData()
+        self.startIndicator()
+        viewModel.fetchData(id: currentLastIndex) { (userData) in
             self.stopIndicator()
+            if !userData.isEmpty {
+                self.githubUserList = userData
+                self.tableView.reloadData()
+            }
         }
     }
     
     private func setupNavigationBar() {
-        //cleaners
         self.navigationController?.navigationBar.setValue(true, forKey: "hidesShadow")
         let searchTextfield = UISearchBar()
         searchTextfield.delegate = self
@@ -63,15 +61,6 @@ class UserListViewController: UIViewController {
     }
     
     //MARK: Actions
-    @objc func fetchMoreUsers() {
-        startIndicator()
-        viewModel.fetchGitUsers(id: githubUserList.last!.id) {
-            self.githubUserList = self.viewModel.userList
-            self.tableView.reloadData()
-            self.stopIndicator()
-        }
-    }
-    
     func startIndicator() {
         navigationController?.setNavigationBarHidden(true, animated: false)
         activityIndicator.show(uiView: self)
@@ -91,11 +80,11 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: UserListTableViewCell.self)) as! UserListTableViewCell
         cell.gitUserName.text = self.githubUserList[indexPath.row].login
-        cell.details.text = "User Repository URL: \(self.githubUserList[indexPath.row].repos_url)"
-        cell.gitImage.image = self.githubUserList[indexPath.row].avatar
+        cell.details.text = "details"
+        cell.gitImage.image = UIImage(data: self.githubUserList[indexPath.row].avatar!)
         let absoluteRow = indexPath.row + 1
         if absoluteRow.isMultiple(of: 4) {
-            cell.gitImage.image = self.githubUserList[indexPath.row].avatar.invertedImage()
+            cell.gitImage.image = cell.gitImage.image?.invertedImage()
         }
         if self.githubUserList[indexPath.row].hasNote {
             cell.noteImage.isHidden = false
@@ -105,13 +94,7 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         return cell
     }
-    
-//    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-//        if indexPath.row + 1 == self.githubUserList.count {
-//            fetchMoreUsers()
-//        }
-//    }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let destinationVC = storyboard?.instantiateViewController(identifier: String(describing: ProfileViewController.self)) as! ProfileViewController
         destinationVC.gitUser = self.githubUserList[indexPath.row]
@@ -122,14 +105,9 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
 extension UserListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
-            self.viewModel.getLocal()
-            self.githubUserList = self.viewModel.userList
-            self.tableView.reloadData()
+            //load all data
         } else {
-            self.viewModel.search(criteria: searchText.lowercased()) { data in
-                self.githubUserList = data
-                self.tableView.reloadData()
-            }
+            //filter data
         }
     }
 }
