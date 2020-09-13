@@ -13,6 +13,7 @@ class UserListViewController: UIViewController {
     private var githubUserList = [UserViewModel]()
     private var activityIndicator = ActivityIndicator()
     private var currentLastIndex = 0
+    private var isDownloading = false
 
     @IBOutlet weak var tableView: UITableView!
     
@@ -27,6 +28,7 @@ class UserListViewController: UIViewController {
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true
+        fetchAvailableData()
     }
     
     //MARK: Setup
@@ -37,14 +39,7 @@ class UserListViewController: UIViewController {
 
     private func setupBindings() {
         viewModel = UserListViewModel()
-        self.startIndicator()
-        viewModel.fetchData(id: currentLastIndex) { (userData) in
-            self.stopIndicator()
-            if !userData.isEmpty {
-                self.githubUserList = userData
-                self.tableView.reloadData()
-            }
-        }
+        fetchAvailableData()
     }
     
     private func setupNavigationBar() {
@@ -64,11 +59,26 @@ class UserListViewController: UIViewController {
     func startIndicator() {
         navigationController?.setNavigationBarHidden(true, animated: false)
         activityIndicator.show(uiView: self)
+        isDownloading = true
+        self.tableView.isUserInteractionEnabled = false
     }
     
     func stopIndicator() {
         navigationController?.setNavigationBarHidden(false, animated: false)
+        isDownloading = false
+        self.tableView.isUserInteractionEnabled = true
         activityIndicator.stop(uiView: self)
+    }
+    
+    func fetchAvailableData() {
+        self.startIndicator()
+        viewModel.fetchData(id: currentLastIndex, isPaginated: false, currentList: []) { (userData) in
+            self.stopIndicator()
+            if !userData.isEmpty {
+                self.githubUserList = userData
+                self.tableView.reloadData()
+            }
+        }
     }
 }
 
@@ -94,6 +104,19 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row + 1 == self.githubUserList.count && !isDownloading{
+            self.startIndicator()
+            viewModel.fetchData(id: (self.githubUserList.last?.id)!, isPaginated: true, currentList: self.githubUserList) { (userData) in
+                self.stopIndicator()
+                if !userData.isEmpty {
+                    self.githubUserList = userData
+                    self.tableView.reloadData()
+                }
+            }
+        }
+    }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let destinationVC = storyboard?.instantiateViewController(identifier: String(describing: ProfileViewController.self)) as! ProfileViewController
@@ -106,6 +129,7 @@ extension UserListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
             //load all data
+            fetchAvailableData()
         } else {
             //filter data
         }
