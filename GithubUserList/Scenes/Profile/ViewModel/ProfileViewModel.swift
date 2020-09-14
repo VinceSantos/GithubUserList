@@ -16,20 +16,24 @@ class ProfileViewModel {
     // MARK: - Outputs
 
     // MARK: - Data
-        func fetchProfileData(userName: String, completion: @escaping() -> Void) {
+    func fetchProfileData(userName: String, completion: @escaping(_ success: Bool) -> Void) {
             let url = URL(string: "https://api.github.com/users/\(userName)")!
 
             URLSession.shared.dataTask(with: url) {(data, response, error) in
-                guard let data = data else { return }
-                do {
-                    let fetchedList = try JSONDecoder().decode(ProfileModel.self, from: data)
-                    DispatchQueue.main.async {
-                        self.syncToLocal(profile: fetchedList) {
-                            completion()
+                if error == nil {
+                    guard let data = data else { return }
+                    do {
+                        let fetchedList = try JSONDecoder().decode(ProfileModel.self, from: data)
+                        DispatchQueue.main.async {
+                            self.syncToLocal(profile: fetchedList) {
+                                completion(true)
+                            }
                         }
+                    } catch {
+                        print(error.localizedDescription)
                     }
-                } catch {
-                    print(error.localizedDescription)
+                } else {
+                    completion(false)
                 }
             }.resume()
         }

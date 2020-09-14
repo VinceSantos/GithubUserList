@@ -41,7 +41,9 @@ class UserListViewModel {
                         self.syncToLocal(fetchedList: item)
                     }
                     self.dispatchGroup.notify(queue: .main) {
-                        completion(sortedData)
+                        self.getLocal { (data) in
+                            completion(data)
+                        }
                     }
                 }
             } else {
@@ -80,8 +82,13 @@ class UserListViewModel {
                             if let imageStringUrl = item.avatar_url {
                                 if let imageUrl = URL(string: imageStringUrl) {
                                     URLSession.shared.dataTask(with: imageUrl) { (data, response, error) in
-                                        userViewList.append(UserViewModel(id: item.id, login: item.login, repos_url: item.repos_url, avatar: data, hasNote: false))
-                                        self.dispatchGroup.leave()
+                                        if error != nil {
+                                            userViewList.append(UserViewModel(id: item.id, login: item.login, repos_url: item.repos_url, avatar: UIImage(named: "user")?.pngData(), hasNote: false))
+                                            self.dispatchGroup.leave()
+                                        } else {
+                                            userViewList.append(UserViewModel(id: item.id, login: item.login, repos_url: item.repos_url, avatar: data, hasNote: false))
+                                            self.dispatchGroup.leave()
+                                        }
                                     }.resume()
                                 }
                             } else {

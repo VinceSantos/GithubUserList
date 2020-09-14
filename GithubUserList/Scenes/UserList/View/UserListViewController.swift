@@ -14,6 +14,7 @@ class UserListViewController: UIViewController {
     private var activityIndicator = ActivityIndicator()
     private var currentLastIndex = 0
     private var isDownloading = false
+    private var isSearching = false
 
     @IBOutlet weak var tableView: UITableView!
     
@@ -91,7 +92,7 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: UserListTableViewCell.self)) as! UserListTableViewCell
         cell.gitUserName.text = self.githubUserList[indexPath.row].login
         cell.details.text = "details"
-        cell.gitImage.image = UIImage(data: self.githubUserList[indexPath.row].avatar!)
+        cell.gitImage.image = UIImage(data: self.githubUserList[indexPath.row].avatar!) ?? UIImage(named: "user")
         let absoluteRow = indexPath.row + 1
         if absoluteRow.isMultiple(of: 4) {
             cell.gitImage.image = cell.gitImage.image?.invertedImage()
@@ -106,7 +107,7 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row + 1 == self.githubUserList.count && !isDownloading{
+        if indexPath.row + 1 == self.githubUserList.count && !isDownloading && !isSearching{
             self.startIndicator()
             viewModel.fetchData(id: (self.githubUserList.last?.id)!, isPaginated: true, currentList: self.githubUserList) { (userData) in
                 self.stopIndicator()
@@ -128,10 +129,15 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
 extension UserListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
-            //load all data
+            isSearching = false
             fetchAvailableData()
         } else {
-            //filter data
+            isSearching = true
+            let filteredData = self.githubUserList.filter { data in
+                return (data.login?.contains(searchText.lowercased()))!
+            }
+            self.githubUserList = filteredData
+            self.tableView.reloadData()
         }
     }
 }

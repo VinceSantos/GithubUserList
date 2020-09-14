@@ -31,11 +31,17 @@ class ProfileViewController: UIViewController {
     private func setupBindings() {
         viewModel = ProfileViewModel()
         self.activityIndicator.show(uiView: self)
-        viewModel.fetchProfileData(userName: gitUser.login!) {
-            self.userProfile = self.viewModel.profileData
-            self.title = self.userProfile?.name
-            self.tableView.reloadData()
-            self.activityIndicator.stop(uiView: self)
+        viewModel.fetchProfileData(userName: gitUser.login!) { success in
+            if success {
+                self.userProfile = self.viewModel.profileData
+                self.title = self.userProfile?.name
+                self.tableView.reloadData()
+                self.activityIndicator.stop(uiView: self)
+            } else {
+                DispatchQueue.main.async {
+                    self.navigationController?.popViewController(animated: true)
+                }
+            }
         }
     }
     
